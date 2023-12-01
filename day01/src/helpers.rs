@@ -34,13 +34,13 @@ pub fn parse_digits(input: &str) -> Vec<u32> {
     let lookup_digits = ["one", "two", "three", "four", "five", "six", "seven", "eight", "nine"];
     let mut digits: Vec<(usize, u32)> = vec![];
     for digit in lookup_digits {
-        let mut result: Vec<_> = input.match_indices(digit).collect();
+        let result: Vec<_> = input.match_indices(digit).collect();
         if result.len() > 0 {
             let mut parsed_result = result.iter().map(|t| (t.0, Digits::from(t.1))).collect::<Vec<(usize, u32)>>();
             digits.append(&mut parsed_result);
         }
     }
-    let mut res2: Vec<_> = input.match_indices(char::is_numeric).collect();
+    let res2: Vec<_> = input.match_indices(char::is_numeric).collect();
     if res2.len() > 0 {
         let mut parsed_result = res2.iter().map(|t| (t.0, t.1.parse::<u32>().unwrap())).collect::<Vec<(usize, u32)>>();
         digits.append(&mut parsed_result);
