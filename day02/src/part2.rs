@@ -1,4 +1,4 @@
-use std::cmp;
+use std::cmp::max;
 use crate::helpers::{Game, Set};
 
 pub fn process(input: &str) -> u32 {
@@ -22,14 +22,13 @@ fn process_line(line: &str) -> Option<u32> {
         .iter()
         .fold(initial, |acc, e|
             Set {
-                red: cmp::max(acc.red, e.red),
-                blue: cmp::max(acc.blue, e.blue),
-                green: cmp::max(acc.green, e.green),
+                red: max(acc.red, e.red),
+                blue: max(acc.blue, e.blue),
+                green: max(acc.green, e.green),
             },
         );
 
-    let product = max_set.red.expect("should be a number") * max_set.blue.expect("should be a number") * max_set.green.expect("should be a number");
-    Some(product)
+    Some(max_set.red.expect("should be a number") * max_set.blue.expect("should be a number") * max_set.green.expect("should be a number"))
 }
 
 #[cfg(test)]
