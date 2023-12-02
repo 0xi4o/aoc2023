@@ -23,9 +23,9 @@ impl Set {
         }
 
         Set {
-            red: sets_map.remove("red"),
-            blue: sets_map.remove("blue"),
-            green: sets_map.remove("green"),
+            red: sets_map.remove("red").or(Some(0)),
+            blue: sets_map.remove("blue").or(Some(0)),
+            green: sets_map.remove("green").or(Some(0)),
         }
     }
 
@@ -68,7 +68,7 @@ mod test {
         let result = Set::from(input);
         let expected = Set {
             red: Some(1),
-            blue: None,
+            blue: Some(0),
             green: Some(2),
         };
         assert_eq!(result, expected);
@@ -86,9 +86,9 @@ mod test {
         let input = "Game 1: 3 blue, 4 red; 1 red, 2 green, 6 blue; 2 green";
         let result = Game::from(input);
         let sets = vec![
-            Set { red: Some(4), blue: Some(3), green: None },
+            Set { red: Some(4), blue: Some(3), green: Some(0) },
             Set { red: Some(1), blue: Some(6), green: Some(2) },
-            Set { red: None, blue: None, green: Some(2) },
+            Set { red: Some(0), blue: Some(0), green: Some(2) },
         ];
         let expected = Game {
             id: 1,

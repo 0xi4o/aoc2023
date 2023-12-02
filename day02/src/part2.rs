@@ -14,9 +14,9 @@ fn process_line(line: &str) -> Option<u32> {
     let game = Game::from(line);
     let _id = &game.id;
     let initial = Set {
-        red: None,
-        blue: None,
-        green: None,
+        red: Some(0),
+        blue: Some(0),
+        green: Some(0),
     };
     let max_set = game.sets
         .iter()
