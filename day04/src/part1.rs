@@ -5,7 +5,7 @@ pub fn process(input: &str) -> u32 {
         .lines()
         .map(|line| {
             let (_, card) = Card::parse(line).unwrap();
-            let points = Card::calculate_points(&card.winning, &card.draw);
+            let points = card.calculate_points();
 
             points
         })

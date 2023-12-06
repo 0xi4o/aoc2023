@@ -12,7 +12,6 @@ pub mod part2;
 
 #[derive(Debug)]
 pub struct Card {
-    pub id: usize,
     pub winning: Vec<u32>,
     pub draw: Vec<u32>,
 }
@@ -23,10 +22,10 @@ impl Card {
         Ok((input, list))
     }
 
-    pub fn calculate_matches(winning: &Vec<u32>, draw: &Vec<u32>) -> u32 {
+    pub fn calculate_matches(&self) -> u32 {
         let mut matches: u32 = 0;
-        for num in draw {
-            let search_result = winning.iter().find(|x| *x == num);
+        for num in &self.draw {
+            let search_result = self.winning.iter().find(|x| *x == num);
             match search_result {
                 Some(_) => { matches += 1 }
                 _ => {}
@@ -35,10 +34,10 @@ impl Card {
 
         matches
     }
-    pub fn calculate_points(winning: &Vec<u32>, draw: &Vec<u32>) -> u32 {
+    pub fn calculate_points(&self) -> u32 {
         let mut points: u32 = 0;
-        for num in draw {
-            let search_result = winning.iter().find(|x| *x == num);
+        for num in &self.draw {
+            let search_result = self.winning.iter().find(|x| *x == num);
             match search_result {
                 Some(_) => {
                     if points == 0 {
@@ -55,7 +54,7 @@ impl Card {
     }
 
     pub fn parse(input: &str) -> IResult<&str, Self> {
-        let (input, id) = preceded(take_till1(|c: char| c.is_ascii_digit()), digit1)(input)?;
+        let (input, _) = preceded(take_till1(|c: char| c.is_ascii_digit()), digit1)(input)?;
         let (input, sets) = preceded(
             tag(": "),
             separated_list1(
@@ -67,7 +66,6 @@ impl Card {
         let draw = sets.last().expect("should be vec of u32").clone();
 
         Ok((input, Card {
-            id: id.parse::<usize>().expect("should be usize"),
             winning,
             draw,
         }))
