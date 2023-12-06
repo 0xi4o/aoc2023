@@ -1,6 +1,6 @@
-pub fn process(input: &str) -> String {
+pub fn process(input: &str) -> u32 {
     let lines = input.lines().collect::<Vec<&str>>();
-    "".to_string()
+    0
 }
 
 #[cfg(test)]
@@ -11,6 +11,6 @@ mod test {
     fn test_process() {
         let input = "";
         let result = process(input);
-        assert_eq!(result, "".to_string());
+        assert_eq!(result, 1);
     }
 }
