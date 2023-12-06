@@ -35,22 +35,11 @@ impl Card {
         matches
     }
     pub fn calculate_points(&self) -> u32 {
-        let mut points: u32 = 0;
-        for num in &self.draw {
-            let search_result = self.winning.iter().find(|x| *x == num);
-            match search_result {
-                Some(_) => {
-                    if points == 0 {
-                        points += 1;
-                    } else {
-                        points *= 2;
-                    }
-                }
-                _ => {}
-            };
+        let matches = self.calculate_matches();
+        match matches.checked_sub(1) {
+            Some(num) => 2u32.pow(num),
+            None => 0
         }
-
-        points
     }
 
     pub fn parse(input: &str) -> IResult<&str, Self> {
