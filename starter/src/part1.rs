@@ -1,6 +1,5 @@
 pub fn process(input: &str) -> String {
     let lines = input.lines().collect::<Vec<&str>>();
-    todo!();
     "".to_string()
 }
 
