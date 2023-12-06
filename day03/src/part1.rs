@@ -14,6 +14,7 @@ struct Coords {
 }
 
 pub fn process(input: &str) -> u32 {
+    let line_len: usize = input.lines().nth(0).expect("should be a &str").len();
     let map = input
         .lines()
         .enumerate()
@@ -31,37 +32,74 @@ pub fn process(input: &str) -> u32 {
         })
         .collect::<BTreeMap<Coords, Value>>();
 
-    // list of numbers with start and end coordinates
-    let mut numbers: Vec<(Coords, Coords, u32)> = vec![];
+    let mut start = Coords { x: 0, y: 0 };
+    let mut end = Coords { x: 0, y: 0 };
+    let mut is_end_of_line = false;
     // buffer for collecting each part number in the engine schematic
-    let mut num: Vec<u32> = vec![];
-    for (coords, value) in map.iter() {
-        if let Value::Number(v) = value {
-            num.push(*v);
-        } else {
-            let v = num.iter().fold(0, |acc, e| acc * 10 + e);
-            // prevents a bunch of zeroes being inserted into our part numbers list
-            if v != 0 {
-                // calculate start and end coordinates for each number
-                numbers.push((
-                    Coords { x: coords.x, y: if coords.y >= num.len() { coords.y - num.len() } else { coords.y } },
-                    Coords { x: coords.x, y: if coords.y > 0 { coords.y - 1 } else { coords.y } },
-                    v
-                ));
+    let mut buf: Vec<u32> = vec![];
+    // list of numbers with start and end coordinates
+    let numbers = map
+        .iter()
+        .filter_map(|(key, value)| {
+            match value {
+                Value::Number(v) => {
+                    buf.push(*v);
+                    if key.y == line_len - 1 {
+                        // check if the current position is the end of a line
+                        is_end_of_line = true;
+                    }
+                    None
+                }
+                _ => {
+                    let num = buf.iter().fold(0, |acc, e| acc * 10 + e);
+                    // println!("{:?}: {:?}", num, v);
+                    // // prevents a bunch of zeroes being inserted into our part numbers list
+                    if num != 0 {
+                        // calculate start and end coordinates for each number
+                        if is_end_of_line {
+                            start = Coords {
+                                x: key.x - 1,
+                                y: line_len - buf.len(),
+                            };
+                            end = Coords {
+                                x: key.x - 1,
+                                y: line_len - 1
+                            };
+                        } else {
+                            start = Coords {
+                                x: key.x,
+                                y: key.y - buf.len(),
+                            };
+                            end = Coords {
+                                x: key.x,
+                                y: key.y - 1
+                            };
+                        }
+                        buf = vec![];
+                        is_end_of_line = false;
+                        Some((start, end, num))
+                    } else {
+                        None
+                    }
+                }
             }
-            num = vec![];
-            continue;
-        }
-    }
+        })
+        .collect::<Vec<(Coords, Coords, u32)>>();
+
     let output: u32 = numbers
         .iter()
         .map(|(start, end, v)| {
             let mut coords_to_check: Vec<Coords> = vec![];
             // (2, 2) to (2, 3): 35
             // coords to check for symbols: (1, 1), (1, 2), (1, 3), (1, 4), (2, 1), (2, 4), (3, 1), (3, 2), (3, 3), (3, 4)
+            let col_range = if end.y == line_len - 1 {
+                end.y
+            } else {
+                end.y + 1
+            };
             if start.x > 0 && start.y > 0 {
                 for i in start.x - 1..=end.x + 1 {
-                    for j in start.y - 1..=end.y + 1 {
+                    for j in start.y - 1..=col_range {
                         coords_to_check.push(Coords { x: i, y: j });
                     }
                 }
@@ -73,7 +111,7 @@ pub fn process(input: &str) -> u32 {
                 }
             } else if start.y > 0 {
                 for i in 0..=end.x + 1 {
-                    for j in start.y - 1..=end.y + 1 {
+                    for j in start.y - 1..=col_range {
                         coords_to_check.push(Coords { x: i, y: j });
                     }
                 }
@@ -111,9 +149,6 @@ pub fn process(input: &str) -> u32 {
             }).collect::<Vec<u32>>().iter().sum();
             Some(part_numbers)
         })
-        // .inspect(|v| {
-        //     println!("{:?}", v);
-        // })
         .sum();
 
     output
@@ -127,7 +162,7 @@ mod test {
     fn test_process() {
         let input = "467..114..
 ...*......
-..35..633.
+..35...633
 ......#...
 617*......
 .....+.58.
