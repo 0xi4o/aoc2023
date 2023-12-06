@@ -1,10 +1,11 @@
+use std::collections::HashSet;
 use nom::{
     bytes::complete::{tag, take_till1},
     character::complete,
-    character::complete::{digit1, space1},
+    character::complete::{digit1, space0},
     IResult,
-    multi::separated_list1,
-    sequence::preceded,
+    multi::fold_many1,
+    sequence::{preceded, separated_pair, terminated},
 };
 
 pub mod part1;
@@ -12,31 +13,29 @@ pub mod part2;
 
 #[derive(Debug)]
 pub struct Card {
-    pub winning: Vec<u32>,
-    pub draw: Vec<u32>,
+    pub winning: HashSet<u32>,
+    pub draw: HashSet<u32>,
 }
 
 impl Card {
-    fn parse_set(input: &str) -> IResult<&str, Vec<u32>> {
-        let (input, list) = separated_list1(space1, complete::u32)(input.trim())?;
-        Ok((input, list))
+    fn parse_set(input: &str) -> IResult<&str, HashSet<u32>> {
+        fold_many1(
+            terminated(complete::u32, space0),
+            HashSet::new,
+            |mut acc, item| {
+                acc.insert(item);
+                acc
+            },
+        )(input.trim())
     }
 
     pub fn calculate_matches(&self) -> u32 {
-        let mut matches: u32 = 0;
-        for num in &self.draw {
-            let search_result = self.winning.iter().find(|x| *x == num);
-            match search_result {
-                Some(_) => { matches += 1 }
-                _ => {}
-            };
-        }
-
-        matches
+        self.winning
+            .intersection(&self.draw)
+            .count() as u32
     }
     pub fn calculate_points(&self) -> u32 {
-        let matches = self.calculate_matches();
-        match matches.checked_sub(1) {
+        match self.calculate_matches().checked_sub(1) {
             Some(num) => 2u32.pow(num),
             None => 0
         }
@@ -44,15 +43,14 @@ impl Card {
 
     pub fn parse(input: &str) -> IResult<&str, Self> {
         let (input, _) = preceded(take_till1(|c: char| c.is_ascii_digit()), digit1)(input)?;
-        let (input, sets) = preceded(
+        let (input, (winning, draw)) = preceded(
             tag(": "),
-            separated_list1(
-                tag(" | "),
+            separated_pair(
+                Card::parse_set,
+                tag("|"),
                 Card::parse_set,
             ),
         )(input)?;
-        let winning = sets.first().expect("should be vec of u32").clone();
-        let draw = sets.last().expect("should be vec of u32").clone();
 
         Ok((input, Card {
             winning,
